@@ -1,0 +1,10 @@
+name,parent,compliance
+Ram,null,80%
+Ashwani,Ram,70%
+Muthuvel,Ram,70%
+Ramu,Ram,60%
+Nasrin,Ashwani,70%
+Vidhya,Ashwani,60%
+Anil,Nasrin,50%
+Priya,Nasrin,40%
+Barani,Vidhya,60%

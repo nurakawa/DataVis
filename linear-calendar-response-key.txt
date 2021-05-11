@@ -1,0 +1,10 @@
+         Response_measure anyo
+1          BanOnAllEvents    1
+2     EntertainmentVenues    2
+3 MasksMandatoryAllSpaces    3
+4       NonEssentialShops    4
+5        RestaurantsCafes    5
+6            SocialCircle    6
+7           StayHomeOrder    7
+8             Teleworking    8
+9       WorkplaceClosures    9

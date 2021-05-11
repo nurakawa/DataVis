@@ -1,0 +1,6 @@
+.flights-map {
+    width: 600px;
+    height: 300px;
+    border: solid #ddd 1px;
+    border-radius: 5px;
+}

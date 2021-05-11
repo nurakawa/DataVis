@@ -1,0 +1,338 @@
+---
+layout: home
+title:  Data Visualization Course - Prototypes
+---
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+#calendar {
+  margin: 20px;
+}
+.month {
+  margin-right: 8px;
+}
+.month-name {
+  font-size: 85%;
+  fill: #777;
+  font-family: Arial, Helvetica;
+}
+.day.hover {
+  stroke: #6d6E70;
+  stroke-width: 2;
+}
+.day.focus {
+  stroke: #ffff33;
+  stroke-width: 2;
+}
+</style>
+<!---
+<h2> Visualization 1: Calendar Heatmap </h2>
+<p> This is a heatmap of the daily percent change in mobility for the variable "Retail and Recreation" in New Zealand. <br>
+What's next to add: <br>
+(1) The color should be the mean or median change in mobility of that day <br>
+(2) At the hover, we should be able to see the change for all the variables <br>
+(3) I will add years next to the month <br>
+(4) I want to add some special dates on the calendar: for example, "Lockdown Begins" or "Lockdown Ends" or "Vaccination Begins." <br>
+Finally, I would like to allow us to select this for different countries. </p>
+
+
+<p>Inspiration: https://observablehq.com/@mbostock/the-impact-of-vaccines</p> -->
+
+<h3>Flights Map </h3>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris at nisi nec mi cursus blandit sed eu eros. Pellentesque venenatis est ex, ac suscipit tortor egestas id. Maecenas vehicula dolor magna, in pretium massa semper nec. In efficitur nunc mi, et aliquet ex feugiat ac. Proin quam quam, vestibulum id nunc id, iaculis volutpat nisl. Nam pretium eu felis non ornare. Duis in mauris non dolor faucibus imperdiet non nec lectus. Sed condimentum tincidunt...
+<br>
+<img src="./assets/flights.gif" width = '1000'>
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris at nisi nec mi cursus blandit sed eu eros. Pellentesque venenatis est ex, ac suscipit tortor egestas id. Maecenas vehicula dolor magna, in pretium massa semper nec. In efficitur nunc mi, et aliquet ex feugiat ac. Proin quam quam, vestibulum id nunc id, iaculis volutpat nisl. Nam pretium eu felis non ornare. Duis in mauris non dolor faucibus imperdiet non nec lectus. Sed condimentum tincidunt laoreet. Mauris tempor risus at commodo mollis. Aenean venenatis magna at mi accumsan, id maximus metus interdum. Vivamus commodo magna magna, id malesuada magna iaculis quis. Maecenas in mauris tristique, scelerisque nulla ut, eleifend ante. Donec cursus neque vehicula tellus viverra tempus. Suspendisse libero turpis, fringilla a varius ac, pharetra nec libero.
+
+<h3>Calendar Heatmap: New Zealand </h3> 
+
+<!-- Load D3 -->
+<script src="//d3js.org/d3.v4.min.js"></script>
+
+<!-- Load D3 Color Scales -->
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+
+<!-- Initialize a select button -->
+<select id="selectButton"></select>
+
+<div id="calendar"></div>
+<script>
+
+// A function that update the chart
+function update(selectedGroup) {
+  // Create new data with the selection?
+  var dataFilter = data.map(function(d){return {value:d[selectedGroup]} })
+    }
+      
+function drawCalendar(dateData){
+
+  var allGroup = ["count", "grocery_and_pharmacy", "parks", "transit_stations", "residential" , "workplaces"]
+  
+  var sb = d3.select("#selectButton")
+  
+  var sb2 = sb.selectAll('myOptions')
+      .data(allGroup)
+      .enter().append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
+    .append("g")
+    
+  console.log(sb2.value)
+        
+  var weeksInMonth = function(month){
+    var m = d3.timeMonth.floor(month)
+    return d3.timeWeeks(d3.timeWeek.floor(m), d3.timeMonth.offset(m,1)).length;
+  }
+
+  var minDate = d3.min(dateData, function(d) { return new Date(d.day) })
+  var maxDate = d3.max(dateData, function(d) { return new Date(d.day) })
+
+  var cellMargin = 2,
+      cellSize = 20;
+
+  var day = d3.timeFormat("%w"),
+      week = d3.timeFormat("%U"),
+      format = d3.timeFormat("%Y-%m-%d"),
+      titleFormat = d3.utcFormat("%a, %d-%b");
+      monthName = d3.timeFormat("%B"),
+      months= d3.timeMonth.range(d3.timeMonth.floor(minDate), maxDate);
+      
+  var svg = d3.select("#calendar").selectAll("svg")
+    .data(months)
+    .enter().append("svg")
+    .attr("class", "month")
+    .attr("height", ((cellSize * 7) + (cellMargin * 8) + 20) ) // the 20 is for the month labels
+    .attr("width", function(d) {
+      var columns = weeksInMonth(d);
+      return ((cellSize * columns) + (cellMargin * (columns + 1)));
+    })
+    .append("g")
+
+  svg.append("text")
+    .attr("class", "month-name")
+    .attr("y", (cellSize * 7) + (cellMargin * 8) + 15 )
+    .attr("x", function(d) {
+      var columns = weeksInMonth(d);
+      return (((cellSize * columns) + (cellMargin * (columns + 1))) / 2);
+    })
+    .attr("text-anchor", "middle")
+    .text(function(d) { return monthName(d); })
+
+  var rect = svg.selectAll("rect.day")
+    .data(function(d, i) { return d3.timeDays(d, new Date(d.getFullYear(), d.getMonth()+1, 1)); })
+    .enter().append("rect")
+    .attr("class", "day")
+    .attr("width", cellSize)
+    .attr("height", cellSize)
+    //.attr("rx", 3).attr("ry", 3) // rounded corners
+    .attr("fill", '#eaeaea') // default light grey fill
+    .attr("y", function(d) { return (day(d) * cellSize) + (day(d) * cellMargin) + cellMargin; })
+    .attr("x", function(d) { return ((week(d) - week(new Date(d.getFullYear(),d.getMonth(),1))) * cellSize) + ((week(d) - week(new Date(d.getFullYear(),d.getMonth(),1))) * cellMargin) + cellMargin ; })
+    .on("mouseover", function(d) {
+      d3.select(this).classed('hover', true);
+    })
+    .on("mouseout", function(d) {
+      d3.select(this).classed('hover', false);
+    })
+    .datum(format);
+
+  rect.append("title")
+    .text(function(d) { return titleFormat(new Date(d)); });
+  
+  // selected variable
+  // When the button is changed, run the updateChart function
+  var selected =  d3.select("#selectButton").on("change", function(d) {
+        // recover the option that has been chosen
+        var selectedOption = d3.select(this).property("value")
+        // run the updateChart function with this selected option
+        update(selectedOption)
+    })
+                      
+  var lookup = d3.nest()
+    .key(function(d) { return d.day; })
+    .rollup(function(leaves) {
+      //return d3.sum(leaves, function(d){ return parseInt(d.count); });
+      return d3.sum(leaves, function(d){ return parseInt(d.count); });
+    })
+    .object(dateData);
+
+  var scale = d3.scaleLinear()
+    .domain(d3.extent(dateData, function(d) { return parseInt(d.count); }))
+    .range([0,1]); // the interpolate used for color expects a number in the range [0,1] but i don't want the lightest part of the color scheme
+
+  rect.filter(function(d) { return d in lookup; })
+    //.style("fill", function(d) { return d3.interpolatePuBu(scale(lookup[d])); })
+    .style("fill", function(d) { return d3.interpolateCividis(scale(lookup[d])); })
+    .select("title")
+    .text(function(d) { return titleFormat(new Date(d)) + ":  " + lookup[d]; });
+
+}
+
+
+//Read the data
+d3.csv("./assets/nz-mob.csv", function(data, response) {
+    drawCalendar(response);  
+})
+
+
+//d3.csv("./assets/nz-mob.csv", function(response){
+//  drawCalendar(response);  
+//})
+
+</script>
+
+<h3>Parallel Coordinates Plot </h3>
+
+ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris at nisi nec mi cursus blandit sed eu eros. Pellentesque venenatis est ex, ac suscipit tortor egestas id. Maecenas vehicula dolor magna, in pretium massa semper nec. In efficitur nunc mi, et aliquet ex feugiat ac. Proin quam quam, vestibulum id nunc id, iaculis volutpat nisl. Nam pretium eu felis non ornare. Duis in mauris non dolor faucibus imperdiet non nec lectus. Sed condimentum tincidunt laoreet. Mauris tempor risus at commodo mollis. Aenean venenatis magna at mi accumsan, id maximus metus interdum. Vivamus commodo magna magna, id malesuada magna iaculis quis. Maecenas in mauris tristique, scelerisque nulla ut, eleifend ante. Donec cursus neque vehicula tellus viverra tempus. Suspendisse libero turpis, fringilla a varius ac, pharetra nec libero.
+<br> <br>
+Fusce dignissim ultrices odio, sit amet imperdiet ex dictum eu. Proin non nisl in mauris tristique scelerisque condimentum quis justo. Nunc eget ipsum porta, dignissim dolor ac, accumsan odio. Vivamus interdum libero sit amet dignissim rhoncus. Donec iaculis accumsan velit, in bibendum nibh fringilla ut. Quisque tempus mi vitae velit auctor placerat. In interdum elit et tortor feugiat congue. Vivamus vitae rutrum magna. Suspendisse potenti. Etiam et lacinia felis. Vivamus gravida, massa nec ultricies interdum, mi nunc eleifend lacus, auctor aliquam leo nisi eget justo.
+
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<!-- A bit of style -->
+<style>
+.axis {
+  opacity: 0.4;
+}
+.axis:hover {
+  opacity: 1;
+}
+</style>
+
+
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 30, right: 250, bottom: 10, left: 50},
+  width = 900 - margin.left - margin.right,
+  height = 400 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform",
+        "translate(" + margin.left + "," + margin.top + ")");
+
+// Parse the Data
+d3.csv("https://raw.githubusercontent.com/knighttoken/Private/main/parallel_data2.csv?token=AH7RITZ6NYM6FM5ZRVCS4LTARE2N4", function(data) {
+
+  // Color scale: give me a specie name, I return a color
+  var keys = ["Belgium", "New Zealand", "United States"]
+  var color = d3.scaleOrdinal()
+    .domain(keys)
+    .range([ "#591bd0", "#21908dff", "#a45e4f"])
+    // .range(d3.schemeSet2);
+  
+  svg.selectAll("mydots")
+    .data(keys)
+    .enter()
+    .append("circle")
+      .attr("cx", 650)
+      .attr("cy", function(d,i){ return 130 + i*30})
+      .attr("r", 7)
+      .style("fill", function(d){return color(d)})
+
+  svg.selectAll("mylabels")
+    .data(keys)
+    .enter()
+    .append("text")
+      .attr("x", 670)
+      .attr("y", function(d,i){return 130 + i*30})
+      .style("fill", function(d){return color(d)})
+      .text(function(d){return d})
+      .attr("text-anchor", "left")
+      .style("alignment-baseline", "middle")
+
+
+  // Here I set the list of dimension manually to control the order of axis:
+  dimensions = ["Retail & Recreation", "Grocery & Pharmacy", "Parks", "Transit stations", "Workplaces", "Residential"]
+
+  // For each dimension, I build a linear scale. I store all in a y object
+  var y = {}
+  for (i in dimensions) {
+    name = dimensions[i]
+    y[name] = d3.scaleLinear()
+      .domain( [-100,50] ) // --> Same axis range for each group
+      // --> different axis range for each group --> .domain( [d3.extent(data, function(d) { return +d[name]; })] )
+      .range([height, 0])
+  }
+
+  // Build the X scale -> it find the best position for each Y axis
+  x = d3.scalePoint()
+    .range([0, width])
+    .domain(dimensions);
+
+  // Highlight the specie that is hovered
+  var highlight = function(d){
+
+    selected_specie = d.country_region_code
+
+    // first every group turns grey
+    d3.selectAll(".line")
+      .transition().duration(200)
+      .style("stroke", "lightgrey")
+      .style("opacity", "0.2")
+    // Second the hovered specie takes its color
+    d3.selectAll("." + selected_specie)
+      .transition().duration(200)
+      .style("stroke", color(selected_specie))
+      .style("opacity", "1")
+  }
+
+  // Unhighlight
+  var doNotHighlight = function(d){
+    d3.selectAll(".line")
+      .transition().duration(200).delay(1000)
+      .style("stroke", function(d){ return( color(d.country_region_code))} )
+      .style("opacity", "1")
+  }
+
+  // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+  function path(d) {
+      return d3.line()(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
+  }
+
+  // Draw the lines
+  svg
+    .selectAll("myPath")
+    .data(data)
+    .enter()
+    .append("path")
+      .attr("class", function (d) { return "line " + d.country_region_code } ) // 2 class for each line: 'line' and the group name
+      .attr("d",  path)
+      .style("fill", "none" )
+      .style("stroke", function(d){ return( color(d.country_region_code))} )
+      .style("opacity", 0.5)
+      .on("mouseover", highlight)
+      .on("mouseleave", doNotHighlight )
+
+  // Draw the axis:
+  svg.selectAll("myAxis")
+    // For each dimension of the dataset I add a 'g' element:
+    .data(dimensions).enter()
+    .append("g")
+    .attr("class", "axis")
+    // I translate this element to its right position on the x axis
+    .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+    // And I build the axis with the call function
+    .each(function(d) { d3.select(this).call(d3.axisLeft().ticks(5).scale(y[d])); })
+    // Add axis title
+    .append("text")
+      .style("text-anchor", "middle")
+      .attr("y", -9)
+      .text(function(d) { return d; })
+      .style("fill", "black")
+
+})
+
+
+</script>
+
+
+</body>

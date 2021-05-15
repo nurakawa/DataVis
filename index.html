@@ -1,13 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <!-- <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
+    <script type="text/javascript" src="js/d3/queue.v1.min.js"></script>
+    <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="js/mousetrap.min.js"></script>
+    <script type="text/javascript" src="js/jquery.min.js"></script>
+    <script type="text/javascript" src="js/nprogress.min.js"></script>
+    <script type="text/javascript" src="js/timesheet.min.js"></script>
+    <script type="text/javascript" src="js/toggleFullScreen.js"></script> -->
+
+    <link type="text/css" rel="stylesheet" href="css/style.css" />
+    <link type="text/css" rel="stylesheet" media="screen and (min-width: 380px)" href="css/nprogress.css" />
+    <link type="text/css" rel="stylesheet" href="css/timesheet.css" />
+  </head>
   <body>
+
+    <embed src="https://knighttoken.github.io" 
+               width="1200" 
+               height="800"
+               style="border:none;" />
+    
     <p>This is prototype for course "Data Visualization" at KU Leuven. My goal is to visualize 
     the <strong>changes in human mobility</strong> in 2020. <br>
     The <strong>calendar heatmap</strong> shows, for different mobility types and different European countries, 
     the daily percent change relative to baseline. Below, the <strong>linear calendar</strong> shows the timeline
     of Covid-19 response measures taken by the country of interest.
     To learn more, please make some selections! </p>
-    
+
     <!-- Select country -->
         <select id="calendarCountry">
           <option value="Austria">Austria</option> 
@@ -216,6 +236,407 @@
         })
     }
     </script>
+
+    <!-- Parallel coordinates -->
+    <div class="form-group row">
+      <div class="col-xs-3">
+        <select id='calendarCountry1' onchange = "setCountry1()">
+          <option value='AT'>Austria</option> 
+          <option value='BE'>Belgium</option> 
+          <option value='BG'>Bulgaria</option> 
+          <option value="HR">Croatia</option> 
+          <!--<option value="Cyprus">Cyprus</option> -->
+          <option value="CZ">Czechia</option> 
+          <option value="DK">Denmark</option> 
+          <option value="EE">Estonia</option> 
+          <option value="FI">Finland</option> 
+          <option value="FR">France</option> 
+          <option value="DE">Germany</option> 
+          <option value="GR">Greece</option> 
+          <option value="HU">Hungary</option> 
+          <!--<option value="Iceland">Iceland</option>-->
+          <option value="IE">Ireland</option> 
+          <option value="IT">Italy</option> 
+          <option value="LV">Latvia</option> 
+          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
+          <option value="LT">Lithuania</option> 
+          <option value="LU">Luxembourg</option> 
+          <option value="MT">Malta</option> 
+          <option value="NL">Netherlands</option> 
+          <option value="NO">Norway</option> 
+          <option value="PL">Poland</option> 
+          <option value="PT">Portugal</option> 
+          <option value="RO">Romania</option> 
+          <option value="SK">Slovakia</option> 
+          <option value="SI">Slovenia</option> 
+          <option value="ES">Spain</option> 
+          <option value="SE">Sweden</option> 
+          <option value="CH">Switzerland</option> 
+          <option value="GB">United Kingdom</option> 
+        </select>
+      
+        <select id='calendarCountry2' onchange = "setCountry2()">
+          <option value='AT'>Austria</option> 
+          <option value='BE'>Belgium</option> 
+          <option value='BG'>Bulgaria</option> 
+          <option value="HR">Croatia</option> 
+          <!--<option value="Cyprus">Cyprus</option> -->
+          <option value="CZ">Czechia</option> 
+          <option value="DK">Denmark</option> 
+          <option value="EE">Estonia</option> 
+          <option value="FI">Finland</option> 
+          <option value="FR">France</option> 
+          <option value="DE">Germany</option> 
+          <option value="GR">Greece</option> 
+          <option value="HU">Hungary</option> 
+          <!--<option value="Iceland">Iceland</option>-->
+          <option value="IE">Ireland</option> 
+          <option value="IT">Italy</option> 
+          <option value="LV">Latvia</option> 
+          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
+          <option value="LT">Lithuania</option> 
+          <option value="LU">Luxembourg</option> 
+          <option value="MT">Malta</option> 
+          <option value="NL">Netherlands</option> 
+          <option value="NO">Norway</option> 
+          <option value="PL">Poland</option> 
+          <option value="PT">Portugal</option> 
+          <option value="RO">Romania</option> 
+          <option value="SK">Slovakia</option> 
+          <option value="SI">Slovenia</option> 
+          <option value="ES">Spain</option> 
+          <option value="SE">Sweden</option> 
+          <option value="CH">Switzerland</option> 
+          <option value="GB">United Kingdom</option> 
+        </select>
+      
+        <select id='calendarCountry3' onchange = "setCountry3()">
+          <option value='AT'>Austria</option> 
+          <option value='BE'>Belgium</option> 
+          <option value='BG'>Bulgaria</option> 
+          <option value="HR">Croatia</option> 
+          <!--<option value="Cyprus">Cyprus</option> -->
+          <option value="CZ">Czechia</option> 
+          <option value="DK">Denmark</option> 
+          <option value="EE">Estonia</option> 
+          <option value="FI">Finland</option> 
+          <option value="FR">France</option> 
+          <option value="DE">Germany</option> 
+          <option value="GR">Greece</option> 
+          <option value="HU">Hungary</option> 
+          <!--<option value="Iceland">Iceland</option>-->
+          <option value="IE">Ireland</option> 
+          <option value="IT">Italy</option> 
+          <option value="LV">Latvia</option> 
+          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
+          <option value="LT">Lithuania</option> 
+          <option value="LU">Luxembourg</option> 
+          <option value="MT">Malta</option> 
+          <option value="NL">Netherlands</option> 
+          <option value="NO">Norway</option> 
+          <option value="PL">Poland</option> 
+          <option value="PT">Portugal</option> 
+          <option value="RO">Romania</option> 
+          <option value="SK">Slovakia</option> 
+          <option value="SI">Slovenia</option> 
+          <option value="ES">Spain</option> 
+          <option value="SE">Sweden</option> 
+          <option value="CH">Switzerland</option> 
+          <option value="GB">United Kingdom</option> 
+        </select>
+        <!-- <label for="ex1">Select date (within 2020)</label> -->
+        <!-- <input class="form-control" id="ex1" type="text" name="daterange" value="03/10/2020 - 06/10/2020"> -->
+        <input type="text" name="daterange" value="03/10/2020 - 06/10/2020">
+        <button type="button" id="saveBtn" class="btn btn-primary" data-dismiss="modal">Filter</button>
+      </div>
+    </div> 
+
+    <script src="https://d3js.org/d3.v4.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+
+    <!-- Create a div where the graph will take place -->
+    <div id="my_dataviz"></div>
+    <style>
+      .axis {
+        opacity: 0.5;
+      }
+      .axis:hover {
+        opacity: 1;
+      }
+      </style>
+        
+        <script>
+      // Country selection
+      var country1;
+      var country2;
+      var country3;
+      
+      // Date picker
+      var startDate;
+      var endDate;
+      $(function() {
+        $('input[name="daterange"]').daterangepicker({
+            opens: 'left'
+          }, function(start, end, label) {
+            console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
+            startDate = start;
+            endDate = end;
+          },);
+      });
+      
+        $('#saveBtn').click(function(){
+              console.log('Let me confirm:' + startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
+        });
+      
+      var dataset;
+      
+      // set the dimensions and margins of the graph
+      var margin = {top: 30, right: 250, bottom: 10, left: 50},
+        width = 900 - margin.left - margin.right,
+        height = 400 - margin.top - margin.bottom;
+      
+      // append the svg object to the body of the page
+      var svg = d3.select("#my_dataviz")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+      
+      // Convert to js' Date object
+      var parseTime = d3.timeParse("%m/%d/%Y");
+      
+      // Parse the Data
+      // d3.csv("https://raw.githubusercontent.com/knighttoken/Private/main/full_parallel.csv?token=AH7RITZPRHD2TFUSVJSPYUTAVFUSM", function(data) {
+        d3.csv('full_parallel.csv', function(data) {
+
+        // Copy to global dataset
+        dataset = data;
+        
+        // Color scale: give me a country, I return a color
+        var keys = ["BE", "DE", "NL"]
+        var color = d3.scaleOrdinal()
+          .domain(keys)
+          // .range([ "#591bd0", "#21908dff", "#a45e4f"])
+          .range(["#e41a1c","#377eb8","#4daf4a"])
+          // .range(d3.schemeSet2);
+        
+        svg.selectAll("mydots")
+          .data(keys)
+          .enter()
+          .append("circle")
+            .attr("cx", 650)
+            .attr("cy", function(d,i){ return 125 + i*30})
+            .attr("r", 7)
+            .attr("class", "legends_dots")
+            .style("fill", function(d){return color(d)})
+      
+        svg.selectAll("mylabels")
+          .data(keys)
+          .enter()
+          .append("text")
+            .attr("x", 670)
+            .attr("y", function(d,i){return 130 + i*30})
+            .attr("class", "legends_text")
+            .style("fill", function(d){return color(d)})
+            .text(function(d){return d})
+            .attr("text-anchor", "left")
+            .style("alignment-baseline", "middle")
+      
+      
+        // Here I set the list of dimension manually to control the order of axis:
+        dimensions = ["Retail & Recreation", "Grocery & Pharmacy", "Parks", "Transit stations", "Workplaces", "Residential"]
+      
+        // For each dimension, I build a linear scale. I store all in a y object
+        var y = {}
+        for (i in dimensions) {
+          name = dimensions[i]
+          y[name] = d3.scaleLinear()
+            .domain( [-100,250] ) // --> Same axis range for each group
+            // --> different axis range for each group --> .domain( [d3.extent(data, function(d) { return +d[name]; })] )
+            .range([height, 0])
+        }
+        // console.log(y);
+      
+        // Build the X scale -> it find the best position for each Y axis
+        x = d3.scalePoint()
+          .range([0, width])
+          .domain(dimensions);
+      
+        // Highlight the country that is hovered
+        var highlight = function(d){
+      
+          selected_specie = d.country_region_code
+      
+          // first every group turns grey
+          d3.selectAll(".line")
+            .transition().duration(200)
+            .style("stroke", "lightgrey")
+            .style("opacity", "0.2")
+          // Second the hovered specie takes its color
+          d3.selectAll("." + selected_specie)
+            .transition().duration(200)
+            .style("stroke", color(selected_specie))
+            .style("opacity", "1")
+        }
+      
+        // Unhighlight
+        var doNotHighlight = function(d){
+          d3.selectAll(".line")
+            .transition().duration(200).delay(1000)
+            .style("stroke", function(d){ return( color(d.country_region_code))} )
+            .style("opacity", "1")
+        }
+      
+        // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
+        function path(d) {
+            return d3.line()(dimensions.map(function(p) {return [x(p), y[p](d[p])]; }));
+        }
+      
+        var firstData = dataset.filter(function(d) {return parseTime(d.date) <= parseTime("5/30/2020") && parseTime(d.date) >= parseTime("3/30/2020") &&
+               (d.country_region_code == 'BE' || d.country_region_code == 'DE' || d.country_region_code == 'NL')})
+      
+        // Draw the lines
+        svg
+          .selectAll("myPath")
+          // .data(data)
+          .data(firstData)
+          .enter()
+          .append("path")
+            .attr("class", function (d) { return "line " + d.country_region_code } ) // 2 class for each line: 'line' and the group name
+            .attr("d",  path)
+            .style("fill", "none" )
+            .style("stroke", function(d){ return( color(d.country_region_code))} )
+            .style("opacity", 0.5)
+            .on("mouseover", highlight)
+            .on("mouseleave", doNotHighlight )
+      
+        // Draw the axis:
+        svg.selectAll("myAxis")
+          // For each dimension of the dataset I add a 'g' element:
+          .data(dimensions).enter()
+          .append("g")
+          .attr("class", "axis")
+          // I translate this element to its right position on the x axis
+          .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
+          // And I build the axis with the call function
+          .each(function(d) { d3.select(this).call(d3.axisLeft().ticks(5).scale(y[d])); })
+          // Add axis title
+          .append("text")
+            .style("text-anchor", "middle")
+            .attr("y", -9)
+            .text(function(d) { return d; })
+            .style("fill", "black")
+      
+        // Click the button, filter the dates
+        d3.select("button")    
+          .on("click", function() {
+            console.log(startDate)
+            var newData = dataset.filter(function(d) {return parseTime(d.date) <= endDate._d && parseTime(d.date) >= startDate._d &&
+               (d.country_region_code == country1 || d.country_region_code == country2 || d.country_region_code == country3)})
+            console.log(newData);
+      
+            keys = [country1, country2, country3];
+            // keys = d3.set(keys, function(d) {return d});
+      
+            // redefine the color scale
+            var color = d3.scaleOrdinal()
+              .domain(keys)
+              // .range([ "#591bd0", "#21908dff", "#a45e4f"])
+              .range(["#e41a1c","#377eb8","#4daf4a"])
+            console.log(keys);
+      
+            var highlight = function(d){
+      
+              selected_specie = d.country_region_code
+      
+              // first every group turns grey
+              d3.selectAll(".line")
+                .transition().duration(200)
+                .style("stroke", "lightgrey")
+                .style("opacity", "0.2")
+              // Second the hovered specie takes its color
+              d3.selectAll("." + selected_specie)
+                .transition().duration(200)
+                .style("stroke", color(selected_specie))
+                .style("opacity", "1")
+            }
+      
+            // Unhighlight
+            var doNotHighlight = function(d){
+                d3.selectAll(".line")
+                  .transition().duration(200).delay(1000)
+                  .style("stroke", function(d){ return( color(d.country_region_code))} )
+                  .style("opacity", "1")
+            }
+      
+            // remove existing lines 
+            svg.selectAll("path.line")
+                 .remove()
+            
+            // draw new lines with filtered dataset
+            svg.selectAll("myPath")
+                  .data(newData)
+                  .enter()
+                  .append("path")
+                  .attr("class", function (d) { return "line " + d.country_region_code } ) // 2 class for each line: 'line' and the group name
+                  .attr("d",  path)
+                  .style("fill", "none" )
+                  .style("stroke", function(d){ return( color(d.country_region_code))} )
+                  .style("opacity", 0.5)
+                  .on("mouseover", highlight)
+                  .on("mouseleave", doNotHighlight );
+            console.log("Filter completed");
+      
+            svg.selectAll("circle.legends_dots").remove()
+            
+            // Update legends
+            svg.selectAll("mydots")
+                .data(keys)
+                .enter()
+                .append("circle")
+                  .attr("cx", 650)
+                  .attr("cy", function(d,i){ return 125 + i*30})
+                  .attr("r", 7)
+                  .attr("class", "legends_dots")
+                  .style("fill", function(d){return color(d)})
+                  .exit().remove();
+      
+            svg.selectAll("text.legends_text").remove()
+      
+            svg.selectAll("mylabels")
+              .data(keys)
+              .enter()
+              .append("text")
+                .attr("x", 670)
+                .attr("y", function(d,i){return 130 + i*30})
+                .attr("class", "legends_text")
+                .style("fill", function(d){return color(d)})
+                .text(function(d){return d})
+                .attr("text-anchor", "left")
+                .style("alignment-baseline", "middle")
+                .exit().remove()
+              });
+      })
+      
+      function setCountry1(){
+        country1 = document.getElementById('calendarCountry1').value;
+      }
+      function setCountry2(){
+        country2 = document.getElementById('calendarCountry2').value;
+      }
+      function setCountry3(){
+        country3 = document.getElementById('calendarCountry3').value;
+      }
+      </script>
+
     
 </body>
 </html>

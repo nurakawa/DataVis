@@ -4,7 +4,18 @@ title:  Mobility in the Age of Covid-19
 ---
 <!DOCTYPE html>
 <html lang="en">
-  <head></head>
+  <head>
+  <style>
+  .splitscreen {
+    display:flex;
+    }
+   .splitscreen .left {
+    flex: 1;
+    }
+    .splitscreen .right {
+    flex: 1;}
+  </style>
+  </head>
   
   <body>
   
@@ -31,6 +42,7 @@ title:  Mobility in the Age of Covid-19
     Let's get started! 
     <br>
     <br>
+    
         
     <h3>Continent View: Which nation has the highest change in mobility at a point in time?</h3>
     
@@ -88,6 +100,26 @@ title:  Mobility in the Age of Covid-19
     </div>
 
     <br><br>
+    
+    <h3>How has the change in Covid Cases over time impacted GDP?</h3>
+    
+    <!-- Covid Cases Per Million 
+    for help with aligning https://stackoverflow.com/questions/19089933/how-to-position-two-elements-side-by-side-using-css
+    -->
+    <div class='splitscreen'> 
+    
+    <div class='left' style="margin-left: -100px; width:100%; height:700px; overflow:hidden;">
+    <object type="text/html" data="covid_cases_per_million/gg1.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
+    
+    <div class = 'right' style="margin-left:0px; margin-right:-120px; width:100%; height:700px; overflow:hidden;">
+    <object type="text/html" data="unemployment/gg.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
+    </div>    
     
     <h3>Country View: Within an Individual European Nation, How has Daily Mobility Changed over Time?</h3>
     

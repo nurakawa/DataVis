@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+    <style>
+
+        text {
+            font-family: sans-serif;
+            fill: #000000;
+        }
+
+        table {
+            visibility: hidden;
+            position: absolute;
+            top: 30px;
+            left: 400px;
+            font-family: sans-serif;
+            font-size: 0.6em;
+        }
+
+        tr:nth-child(even) {
+            background-color: #d9d9d9;
+            
+        }
+
+        .brushed {
+            fill: red;
+            //fill: #ff3399;
+            stroke: #8e1b54;
+            opacity: 1.0;
+        }
+
+        .non_brushed {
+            fill: #404040;
+            opacity: 0.5;
+        }
+        
+        #month-select {
+           font-family: sans-serif;
+            font-size: 0.7em;
+            margin: 0;
+            display: block;
+            
+        }
+        
+
+    </style>
+<body>
+
+   <!--scripts-->
+   <script src="https://d3js.org/d3.v3.min.js"></script>
+  <script src="https://d3js.org/topojson.v1.min.js"></script>
+  <script src="https://d3js.org/queue.v1.min.js"></script>
+  
+  <!-- Create the radio button--> 
+    <div id="month-select">
+        <input type="radio" name="colorButton" value = "01"  > Jan 
+    <input type="radio" name="colorButton" value = "02" > Feb 
+    <input type="radio" name="colorButton" value = "03" checked > Mar 
+        <input type="radio" name="colorButton" value = "04" > Apr
+    <input type="radio" name="colorButton" value = "05" > May 
+    <input type="radio" name="colorButton" value = "06" > Jun 
+    <input type="radio" name="colorButton" value = "07" > Jul 
+    <input type="radio" name="colorButton" value = "08" > Aug 
+    <input type="radio" name="colorButton" value = "09" > Sep
+    <input type="radio" name="colorButton" value = "10" > Oct
+    <input type="radio" name="colorButton" value = "11" > Nov
+    <input type="radio" name="colorButton" value = "12" > Dec    
+    </div>  
+    <br>  
+    <!--<div id="month-select">
+    <input type="range" name="colorButton" id=month-select min="1" max="12" value="1">
+    </div>-->
+  
+  
+    <!--viz-->
+    <div id="chart"></div>
+        
+
+    <!--table for data of brushed elements-->
+    <div id="table">
+        <table>
+            <tr>
+                <th>Country</th>
+                <th>New Cases</th> 
+                <th>Mobility Change (%)</th> 
+            </tr>
+        </table>
+    </div>
+
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+
+
+    <script>
+    
+    updateMonth("03")
+    
+        // Initiate
+            d3.select("#month-select").on("change", function(d){
+              selectedGroup = d3.select("input[name='colorButton']:checked").property("value");
+              
+              //selectedGroup = String(selectedGroup);
+              //selectedGroup = String(this.value);
+              d3.select("#chart").selectAll("*").remove();
+              
+              updateMonth(selectedGroup)
+            });
+            
+        
+        function updateMonth(selectedGroup){
+           
+           
+        // Commented version of
+        // http://bl.ocks.org/feyderm/6bdbc74236c27a843db633981ad22c1b
+        
+
+
+        // Variables
+        var margin = {top: 20, right: 0, bottom: 50, left: 85},
+            svg_dx = 500, 
+            svg_dy = 400,
+            plot_dx = svg_dx - margin.right - margin.left,
+            plot_dy = svg_dy - margin.top - margin.bottom;
+
+        // x axis scale
+        // y axis scale
+        var x = d3.scaleLinear().range([margin.left, plot_dx]),
+            y = d3.scaleLinear().range([plot_dy, margin.top]);
+
+        // Tick formatting code
+        // resource for d3.format: https://github.com/d3/d3-format
+        var formatIncome = d3.format(".2f"),
+            formatHsGrad = d3.format(".2f"),
+            formatHsGradAxis = d3.format(".0f");
+            
+       
+
+
+        // Create SVG Viewport
+        var svg = d3.select("#chart")
+                    .append("svg")
+                    .attr("width", svg_dx)
+                    .attr("height", svg_dy);
+                            
+        
+        
+        
+        
+        // CSV AJAX Call
+        d3.csv("../data/owid-data-europe.csv", function(d) {
+        
+        // filter by month
+        
+           tokeep = [selectedGroup]
+        
+           d = d.filter(function(d,i){ return tokeep.indexOf(d.month) >= 0 });
+
+
+
+            // Remove NA
+            // source: https://stackoverflow.com/questions/12922236/removing-rows-when-reading-data-d3/12922313
+            d = d.filter(function(d){ 
+                 if(isNaN(d.new_cases)){
+                 return false;
+                }
+                d.new_cases = parseFloat(d.new_cases, 2);
+                return true;
+               });
+               
+            d = d.filter(function(d){ 
+                 if(isNaN(d.mobility_change)){
+                 return false;
+                }
+                d.mobility_change = parseFloat(d.mobility_change, 2);
+                return true;
+               });
+
+
+            // Figure out number of data elements in the data
+            var n = d.length;
+
+            // Define the extent for the x domain based on numerical income
+            // Define the extend for the y domain based on hs_grad percentages
+            var d_extent_x = d3.extent(d, d => +d.new_cases),
+                d_extent_y = d3.extent(d, d => +d.mobility_change);
+
+            // Define x and y scale domains based on calculated data
+            x.domain(d_extent_x);
+            y.domain(d_extent_y);
+
+            // Define x and y axis as well as the respective tick formats
+            var axis_x = d3.axisBottom(x)
+                           .tickFormat(formatIncome),
+                axis_y = d3.axisLeft(y)
+                           .tickFormat(formatHsGradAxis);
+
+            // Draw the X Axis
+            svg.append("g")
+               .attr("id", "axis_x")
+               .attr("transform", "translate(0," + (plot_dy + margin.bottom / 2) + ")")
+               .call(axis_x);
+
+            // Draw the Y Axis
+            svg.append("g")
+               .attr("id", "axis_y")
+               .attr("transform", "translate(" + (margin.left / 2) + ", 0)")
+               .call(axis_y);
+
+            // Label the X Axis
+            d3.select("#axis_x")
+              .append("text")
+              .attr("transform", "translate(360, -10)")
+              .text("New Cases, per million");
+
+            // Label the Y Axis
+            d3.select("#axis_y")
+              .append("text")
+              .attr("transform", "rotate(-90) translate(-20, 15)")
+              .text("Average Mobility Change (%)");
+
+            // Create the Scatterplot circles
+            var circles = svg.append("g")
+                             .selectAll("circle")
+                             .data(d)
+                             .enter()
+                             .append("circle")
+                             .attr("r", 7)
+                             .attr("cx", function(d) { return x(+d.new_cases); })
+                             .attr("cy", function(d) { return y(+d.mobility_change); })
+                             .attr("class", "non_brushed");
+
+            // Function to run when things are being brushed
+            //   - .on("brush", highlightBrushedCircles)
+            function highlightBrushedCircles() {
+
+                // If something was actually brushed, then do the following
+                if (d3.event.selection != null) {
+
+                    // revert circles to initial style
+                    circles.attr("class", "non_brushed");
+
+                    // Figure out the brush coordinates
+                    var brush_coords = d3.brushSelection(this);
+
+                    // style brushed circles
+                    // For each circle in the selection
+                    //   - figure out where it is
+                    //   - run it through the isBrushed function
+                    //   - if the coordinates fall within the brush_coords then keep
+                    //   - otherwise, don't do anything
+                    // Finally, for those kept, set class to "brushed"
+                    circles.filter(function () {
+
+                               // 
+                               var cx = d3.select(this).attr("cx"),
+                                   cy = d3.select(this).attr("cy");
+
+                               return isBrushed(brush_coords, cx, cy);
+                           })
+                           .attr("class", "brushed");
+                }
+            }
+
+            // Function to display the HTML table
+            //   - Function run .on("end", displayTable); 
+            function displayTable() {
+
+                // disregard brushes w/o selections  
+                // ref: http://bl.ocks.org/mbostock/6232537
+                if (!d3.event.selection) return;
+
+                // programmed clearing of brush after mouse-up
+                // ref: https://github.com/d3/d3-brush/issues/10
+                d3.select(this).call(brush.move, null);
+
+                var d_brushed =  d3.selectAll(".brushed").data();
+
+                // populate table if one or more elements is brushed
+                if (d_brushed.length > 0) {
+                    clearTableRows();
+                    d_brushed.forEach(function(d_row) { return populateTableRow(d_row); })
+                } else {
+                    clearTableRows();
+                }
+            }
+
+            // Define Brush Behavior
+            var brush = d3.brush()
+                          .on("brush", highlightBrushedCircles)
+                          .on("end", displayTable); 
+
+            svg.append("g")
+               .call(brush);
+               
+        });
+        
+
+        // Clear the table rows functions
+        function clearTableRows() {
+
+            // First hide the column names
+            hideTableColNames();
+
+            // Remove all the table rows
+            d3.selectAll(".row_data").remove();
+        }
+
+        // Given coordinates of circles and brush_coords
+        //   - get the boundaries from the brush_coords
+        //   - do a massively long boolean comparison
+        //     to make sure circle coordinates are with brush_coords
+        function isBrushed(brush_coords, cx, cy) {
+
+             var x0 = brush_coords[0][0],
+                 x1 = brush_coords[1][0],
+                 y0 = brush_coords[0][1],
+                 y1 = brush_coords[1][1];
+
+            return x0 <= cx && cx <= x1 && y0 <= cy && cy <= y1;
+        }
+
+        // Change HTML Table names to invisible
+        function hideTableColNames() {
+            d3.select("table").style("visibility", "hidden");
+        }
+
+        // Change HTML Table names to visitle
+        function showTableColNames() {
+            d3.select("table").style("visibility", "visible");
+        }
+
+        // Given data for a row, fill it out
+        function populateTableRow(d_row) {
+
+            // Change HTML Table names to visitle
+            showTableColNames();
+
+            // Create data structure and format as needed
+            var d_row_filter = [d_row.location, 
+                                formatIncome(d_row.new_cases), 
+                                formatHsGrad(d_row.mobility_change)];
+
+            // Do a data join
+            //   - Add a new row and then do a data join for the <td>'s
+            //   - This way, it'll be only enter selection
+            //   - From data structure above, we'll have three <td>'s
+            d3.select("table")
+              .append("tr")
+              .attr("class", "row_data")
+              .selectAll("td")
+              .data(d_row_filter)
+              .enter()
+              .append("td")
+              .attr("align", (d, i) => i == 0 ? "left" : "right")
+              .text(d => d);
+        }
+        
+        };
+        
+
+    </script>
+
+</body>
+

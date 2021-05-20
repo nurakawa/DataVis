@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<!-- <svg width="960" height="960" font-family="sans-serif" font-size="10"></svg> -->
+<div id = "stacked_bar" font-family="sans-serif"></div>
+<!-- <svg width="960" height="960" font-family="sans-serif" font-size="10"></svg> -->
+<style> 
+  .d3-tip {
+    line-height: 1;
+    font-weight: lighter;
+    font-size: 15px;
+    padding: 12px;
+    font-family:Arial, Helvetica, sans-serif "sans-serif";
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 2px;
+  }
+  
+  /* Creates a small triangle extender for the tooltip */
+  /* .d3-tip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 5px;
+    width: 100%;
+    line-height: 1;
+    color: rgba(0, 0, 0, 0.8);
+    content: "\25BC";
+    position: absolute;
+    text-align: center;
+  } */
+  
+  /* Style northward tooltips differently */
+  .d3-tip.n:after {
+    margin: -1px 0 0 0;
+    top: 100%;
+    left: 0;
+  }
+  </style>
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="../js/d3-scale-radial.js"></script>
+<script>
+
+var svg = d3.select("#stacked_bar")
+            .append("svg")
+            .attr("width", 960)
+            .attr("height", 960)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 10)
+
+var svg = d3.select("svg"),
+    width = +svg.attr("width"),
+    height = +svg.attr("height"),
+    innerRadius = 320, 
+    // was 180 previously
+    outerRadius = Math.min(width, height) / 5.5,
+    g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+var x = d3.scaleBand()
+    .range([0, 2 * Math.PI])
+    .align(0);
+
+var y = d3.scaleRadial()
+    .range([innerRadius, outerRadius]);
+
+var z = d3.scaleOrdinal()
+    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    // .range(["#1f77b4","#ff7f0e","#2ca02c","#d62728","#9467bd","#8c564b","#e377c2","#7f7f7f","#bcbd22","#17becf"]);
+
+var parseTime = d3.timeParse("%m/%d/%Y");
+
+
+d3.csv("https://raw.githubusercontent.com/nurakawa/nurakawa.github.io/master/DataVis/full_parallel.csv", function(d, i, columns) {
+  d.date = parseTime(d[columns[1]]);
+  for (i = 2, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+  d.total = t;
+  return d;
+}, function(error, oldData) {
+  if (error) throw error;
+
+  // console.log(oldData);
+  var data = oldData.filter(function(d) {
+    return d.date <= parseTime("12/24/2020") && d.date >= parseTime("12/24/2020");
+  })
+  data.columns = oldData.columns;
+  console.log(data);
+
+  x.domain(data.map(function(d) { return d.country_region_code; }));
+  y.domain([-249, d3.max(data, function(d) { return d.total; })]);
+  // y.domain([-249, 0]);
+  console.log(data.columns);
+  z.domain(data.columns.slice(2));
+
+  g.append("g")
+    .selectAll("g")
+    .data(d3.stack().keys(data.columns.slice(2)).offset(d3.stackOffsetDiverging)(data))
+    .enter().append("g")
+    .attr("fill", function(d) {return z(d.key); })
+    .selectAll("path")
+    .data(function(d) { 
+      // console.log(d[0]["data"]);
+      // console.log(d.data.country_region_code);
+      // d.country_region_code = d["data"];
+      return d; 
+    })
+    .enter().append("path")
+    .attr("d", d3.arc()
+          .innerRadius(function(d) { return y(d[0]); })
+          .outerRadius(function(d) { return y(d[1]); })
+          .startAngle(function(d) { return x(d.data.country_region_code); })
+          .endAngle(function(d) { return x(d.data.country_region_code) + x.bandwidth(); })
+          .padAngle(0.01)
+          .padRadius(innerRadius));
+
+  var label = g.append("g")
+    .selectAll("g")
+    .data(data)
+    .enter().append("g")
+      .attr("text-anchor", "middle")
+      .attr("transform", function(d) { return "rotate(" + ((x(d.country_region_code) + x.bandwidth() / 2) * 180 / Math.PI - 90) + ")translate(" + (innerRadius + 75) + ",0)"; });
+
+  label.append("line")
+      .attr("x2", -5)
+      .attr("stroke", "#000");
+
+  label.append("text")
+        .attr("transform", function(d) { return (x(d.country_region_code) + x.bandwidth() / 2 + Math.PI / 2) % (2 * Math.PI) < Math.PI ? "rotate(90)translate(0,16)" : "rotate(-90)translate(0,-9)"; })
+        .text(function(d) { return d.country_region_code; });
+
+  var yAxis = g.append("g")
+      .attr("text-anchor", "middle");
+
+  var yTick = yAxis
+    .selectAll("g")
+    .data(y.ticks(1).slice(1))
+    .enter().append("g");
+
+  yTick.append("circle")
+      .attr("fill", "none")
+      .attr("stroke", "#000")
+      .attr("r", y);
+
+  yTick.append("text")
+      .attr("y", function(d) { return -y(d); })
+      .attr("dy", "0.35em")
+      .attr("fill", "none")
+      .attr("stroke", "#fff")
+      .attr("stroke-width", 5)
+      .text(y.tickFormat(5, "s"));
+
+  yTick.append("text")
+      .attr("y", function(d) { return -y(d); })
+      .attr("dy", "0.35em")
+      .text(y.tickFormat(5, "s"));
+
+  yAxis.append("text")
+      .attr("y", function(d) { return -y(y.ticks(5).pop())*2.4; })
+      .attr("dy", "-1em")
+      .text("Percent change in mobility");
+
+  var legend = g.append("g")
+    .selectAll("g")
+    .data(data.columns.slice(2).reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(-50," + (i - (data.columns.length*1.65 - 1) / 2) * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("width", 18)
+      .attr("height", 18)
+      .attr("fill", z);
+
+  legend.append("text")
+      .attr("x", 24)
+      .attr("y", 9)
+      .attr("dy", "0.35em")
+      .text(function(d) { return d; });
+
+  var Tooltip = d3.select("#stacked_bar")
+    // .append("div")
+    // .style("opacity", 0)
+    // .attr("class", "tooltip")
+    // .style("background-color", "white")
+    // .style("border", "solid")
+    // .style("border-width", "2px")
+    // .style("border-radius", "5px")
+    // .style("padding", "5px");
+    .append("div")
+    .attr('class', 'd3-tip')
+    .style("position", "absolute")
+    .style("visibility", "hidden");
+
+  var mouseover = function(d) {
+    Tooltip
+      .style("opacity", 1)
+      .style("visibility", "visible")
+      // .style("left", d[0] + "px")     
+      // .style("top", d[1] + "px");
+    d3.select(this)
+      .style("stroke", "black")
+      .style("opacity", 1)
+  }
+  // #98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"
+  var mousemove = function(d) {
+    // console.log(d3.mouse(this))
+    Tooltip
+      .html("Country: " + d.data.country_region_code + "</span><br> Percent change from the baseline: <br>" 
+      + "<span style='color:#ff8c00'>Residential</span>: " + d.data.Residential.toFixed(2) 
+      + "<br><span style='color:#d0743c'>Workplaces</span>: " + d.data.Workplaces.toFixed(2) 
+      + "<br><span style='color:#a05d56'>Transit stations</span>: " + d.data["Transit stations"].toFixed(2)
+      + "<br><span style='color:#6b486b'>Parks</span>: " + d.data.Parks.toFixed(2)  
+      + "<br> <span style='color:#7b6888'>Grocery & Pharmacy</span>: " + d.data["Grocery & Pharmacy"].toFixed(2) 
+      + "<br> <span style='color:#8a89a6'>Retail & Recreation</span>: " + d.data["Retail & Recreation"].toFixed(2))
+      .style("left", (d3.mouse(this)[0] + 500) + "px")
+      .style("top", (d3.mouse(this)[1] + 350) + "px")
+  }
+  var mouseleave = function(d) {
+    Tooltip
+      .style("opacity", 0)
+    d3.select(this)
+      .style("stroke", "none")
+      // .style("opacity", 0.8)
+  } 
+  
+  d3.selectAll("path")
+      .on("mouseover", mouseover)
+      .on("mousemove", mousemove)
+      .on("mouseout", mouseleave);
+});
+
+</script>

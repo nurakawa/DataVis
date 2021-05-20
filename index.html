@@ -1,642 +1,118 @@
+---
+layout: datavis
+title:  Mobility in the Age of Covid-19
+---
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <!-- <script type="text/javascript" src="js/d3/d3.v3.min.js"></script>
-    <script type="text/javascript" src="js/d3/queue.v1.min.js"></script>
-    <script type="text/javascript" src="js/d3/topojson.v1.min.js"></script>
-    <script type="text/javascript" src="js/mousetrap.min.js"></script>
-    <script type="text/javascript" src="js/jquery.min.js"></script>
-    <script type="text/javascript" src="js/nprogress.min.js"></script>
-    <script type="text/javascript" src="js/timesheet.min.js"></script>
-    <script type="text/javascript" src="js/toggleFullScreen.js"></script> -->
-
-    <link type="text/css" rel="stylesheet" href="css/style.css" />
-    <link type="text/css" rel="stylesheet" media="screen and (min-width: 380px)" href="css/nprogress.css" />
-    <link type="text/css" rel="stylesheet" href="css/timesheet.css" />
-  </head>
-  <body>
-
-    <embed src="https://knighttoken.github.io" 
-               width="1200" 
-               height="800"
-               style="border:none;" />
-    
-    <p>This is prototype for course "Data Visualization" at KU Leuven. My goal is to visualize 
-    the <strong>changes in human mobility</strong> in 2020. <br>
-    The <strong>calendar heatmap</strong> shows, for different mobility types and different European countries, 
-    the daily percent change relative to baseline. Below, the <strong>linear calendar</strong> shows the timeline
-    of Covid-19 response measures taken by the country of interest.
-    To learn more, please make some selections! </p>
-
-    <!-- Select country -->
-        <select id="calendarCountry">
-          <option value="Austria">Austria</option> 
-          <option value="Belgium">Belgium</option> 
-          <option value="Bulgaria">Bulgaria</option> 
-          <option value="Croatia">Croatia</option> 
-          <!--<option value="Cyprus">Cyprus</option> -->
-          <option value="Czechia">Czechia</option> 
-          <option value="Denmark">Denmark</option> 
-          <option value="Estonia">Estonia</option> 
-          <option value="Finland">Finland</option> 
-          <option value="France">France</option> 
-          <option value="Germany">Germany</option> 
-          <option value="Greece">Greece</option> 
-          <option value="Hungary">Hungary</option> 
-          <!--<option value="Iceland">Iceland</option>-->
-          <option value="Ireland">Ireland</option> 
-          <option value="Italy">Italy</option> 
-          <option value="Latvia">Latvia</option> 
-          <option value="Liechtenstein">Liechtenstein</option> 
-          <option value="Lithuania">Lithuania</option> 
-          <option value="Luxembourg">Luxembourg</option> 
-          <option value="Malta">Malta</option> 
-          <option value="Netherlands">Netherlands</option> 
-          <option value="Norway">Norway</option> 
-          <option value="Poland">Poland</option> 
-          <option value="Portugal">Portugal</option> 
-          <option value="Romania">Romania</option> 
-          <option value="Slovakia">Slovakia</option> 
-          <option value="Slovenia">Slovenia</option> 
-          <option value="Spain">Spain</option> 
-          <option value="Sweden">Sweden</option> 
-          <option value="Switzerland">Switzerland</option> 
-          <option value="United Kingdom">United Kingdom</option> 
-        </select>
-
-    <!-- Select Indicator -->   
-    <select id="ddlViewBy">
-      <option value="retail and recreation">retail and recreation</option>
-      <option value="grocery and pharmacy">grocery and pharmacy</option>
-      <option value="parks">parks</option>
-      <option value="transit stations">transit stations</option>
-      <option value="workplaces">workplaces</option>
-      <option value="residential">residential</option>
-      <option value="driving">driving</option>
-    </select>
-    
-    <!-- Create Division for Calendar Heatmap -->   
-    
-    <div id="calendar" style="width: 100%; height: 220px; font-size:12px;"></div>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
-    <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
-    <script src="d3.calendar.js"></script>
-    <script>
-            // Initiate
-            
-            // Update Calendar Heatmap
-            d3.select("#ddlViewBy").on("change", function(d){
-              selectedGroup = String(this.value);
-              d3.select("#calendar").selectAll("*").remove();
-              updateChart(selectedGroup, selectedCountry)
-            });
-            
-            d3.select("#calendarCountry").on("change", function(d){
-              selectedCountry = String(this.value);
-              d3.select('#calendar .chart').remove();
-              d3.select('#exports').selectAll("*").remove();
-              updateChart(selectedGroup, selectedCountry)
-              updateLineCalendar(selectedCountry)
-            })
-            
-            // updateLineCalendar
-
-            d3.select("#calendarCountry").on("change", function(d){
-              selectedCountry = String(this.value);
-              d3.select('#exports').selectAll("*").remove();
-              d3.select('#calendar .chart').remove();
-              updateLineCalendar(selectedCountry)
-              updateChart(selectedGroup, selectedCountry)
-            })
-              
-
-        function updateChart(selectedGroup, selectedCountry){
-          
-          // Data Source: Google Mobility, report on Github
-          // https://github.com/ActiveConclusion/COVID19_mobility/blob/master/summary_reports/summary_report_countries.csv
-        
-          d3.csv("https://raw.githubusercontent.com/ActiveConclusion/COVID19_mobility/master/summary_reports/summary_report_countries.csv", 
-          function(error, data) {
-            if (error) throw error;
-            
-            d3.timeFormatDefaultLocale({
-                "decimal": ".",
-                "thousands": ",",
-                "grouping": [3],
-                "currency": ["$", ""],
-                "dateTime": "%a %b %e %X %Y",
-                "date": "%m/%d/%Y",
-                "time": "%H:%M:%S",
-                "periods": ["AM", "PM"],
-                "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-                "shortDays": ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"],
-                "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
-                "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-            });
-            
-            var newdata = data.filter(function(d){ return d.country == selectedCountry});
-
-            var chart = new Calendar(d3.select('#calendar'), newdata,{
-                'datefield': 'date',
-                'key' : selectedGroup,
-                'year': 2020,
-                'mondaystart': true,
-            });
-        
-        // Legend
-        // Using library from: https://d3-legend.susielu.com/
-        
-        // Get the min and max of the domain
-        var domainmin = d3.min(newdata, function(d){ return +d[selectedGroup]});
-        var domainmax = d3.max(newdata, function(d){ return +d[selectedGroup]});
-        
-        // Sequential Scale for Legend
-        var sequentialScale = d3.scaleSequential(d3.interpolateRdYlBu).domain([domainmax,domainmin]);
-        var svg = d3.select("svg");
-        svg.append("g")
-        .style("font-size", "10px")
-        .attr("class", "legendSequential")
-        .attr("transform", "translate(20,20)");
-        
-        var legendSequential = 
-        d3.legendColor().
-        shapeWidth(30).cells(10)
-        .orient("horizontal")
-        .scale(sequentialScale)
-
-        svg.select(".legendSequential")
-        .call(legendSequential);
+  <head></head>
   
-            });
-        };
+  <body>
+  
+  <h4>by Minh Cuong Hoang, Maria Nankova, Shourya Bhattacharya, and Nura Kawa</h4>
     
-    </script>
+    <p>This data story is created for course "Data Visualization" at KU Leuven. Our goal is to visualize 
+    the <strong>changes in human mobility</strong> in 2020. 
+    <br>
+    <h3> Google Mobility Data </h3>
     
-
+    Since the beginning of the Covid-19 pandemic, Google has provided open-source <a href="https://www.google.com/covid19/mobility/"> Mobility Reports.</a> From Google: "These Community Mobility
+    Reports aim to provide insights into what has changed in response to policies aimed at combating COVID-19. The reports chart movement trends over time by geography, across different categories
+    of places such as retail and recreation, groceries and pharmacies, parks, transit stations, workplaces, and residential."<br> <br>
     
-    <!-- Line Calendar -->
-       <div id="exports" style="width: 100%; height: 220px;"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
-    <script src="d3.linearcalendar.js"></script>
+    <strong>The data show how visits and length of stay at different places change compared to a baseline. The baseline is the median value, for the corresponding day of the week, during the 5-week
+    period Jan 3–Feb 6, 2020.</strong>
+    <br> <br>
     
-    <!-- Reponse Key -->
-    <h4>Key</h4>
-    <p style="font-size:12px">
-    1 - Ban on All Events <br> 
-    2 - Close Entertainment Venues <br>
-    3 - Mask Mandatory in All Spaces <br>
-    4 - Close Non-Essential Stores <br>
-    5 - Close Resaurants and Cafes <br>
-    6 - Limit Social Circle <br>
-    7 - Stay at Home Order <br>
-    8 - Teleworking <br>
-    9 - Workplace Closures
-</p>
-
-        <script>
-    function updateLineCalendar(selectedCountry){
-
-        d3.csv('response-graph.csv', function(data) {
-           
-          var data = data.filter(function(d){ return d.Country == selectedCountry});
-           
-           data.forEach(function(d){
-                d.inicio = d.inicio.substring(0, d.inicio.length - 5);
-                d.fin = d.fin.substring(0, d.fin.length - 5);
-            });
-
-            d3.timeFormatDefaultLocale({
-                "decimal": ".",
-                "thousands": ",",
-                "grouping": [3],
-                "currency": ["$", ""],
-                "dateTime": "%a %b %e %X %Y",
-                "date": "%m/%d/%Y",
-                "time": "%H:%M:%S",
-                "periods": ["AM", "PM"],
-                "days": ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-                "shortDays": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-                "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-                "shortMonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-            });
-            
-            var grafico = new LinearCalendar(d3.select('#exports'), data, {
-                'year': 'anyo',
-                'start': 'inicio',
-                'end': 'fin',
-                'domain': ['01-01', '31-12'],
-                'color': '#A01897',
-                'dateformat': '%d-%m',
-                'title': 'Covid-19 Response Measures',
-                'source': '<a href="https://www.ecdc.europa.eu/en/publications-data/download-data-response-measures-covid-19"></a>',
-            })
-                        
-        })
-    }
-    </script>
-
-    <!-- Parallel coordinates -->
-    <div class="form-group row">
-      <div class="col-xs-3">
-        <select id='calendarCountry1' onchange = "setCountry1()">
-          <option value='AT'>Austria</option> 
-          <option value='BE'>Belgium</option> 
-          <option value='BG'>Bulgaria</option> 
-          <option value="HR">Croatia</option> 
-          <!--<option value="Cyprus">Cyprus</option> -->
-          <option value="CZ">Czechia</option> 
-          <option value="DK">Denmark</option> 
-          <option value="EE">Estonia</option> 
-          <option value="FI">Finland</option> 
-          <option value="FR">France</option> 
-          <option value="DE">Germany</option> 
-          <option value="GR">Greece</option> 
-          <option value="HU">Hungary</option> 
-          <!--<option value="Iceland">Iceland</option>-->
-          <option value="IE">Ireland</option> 
-          <option value="IT">Italy</option> 
-          <option value="LV">Latvia</option> 
-          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
-          <option value="LT">Lithuania</option> 
-          <option value="LU">Luxembourg</option> 
-          <option value="MT">Malta</option> 
-          <option value="NL">Netherlands</option> 
-          <option value="NO">Norway</option> 
-          <option value="PL">Poland</option> 
-          <option value="PT">Portugal</option> 
-          <option value="RO">Romania</option> 
-          <option value="SK">Slovakia</option> 
-          <option value="SI">Slovenia</option> 
-          <option value="ES">Spain</option> 
-          <option value="SE">Sweden</option> 
-          <option value="CH">Switzerland</option> 
-          <option value="GB">United Kingdom</option> 
-        </select>
-      
-        <select id='calendarCountry2' onchange = "setCountry2()">
-          <option value='AT'>Austria</option> 
-          <option value='BE'>Belgium</option> 
-          <option value='BG'>Bulgaria</option> 
-          <option value="HR">Croatia</option> 
-          <!--<option value="Cyprus">Cyprus</option> -->
-          <option value="CZ">Czechia</option> 
-          <option value="DK">Denmark</option> 
-          <option value="EE">Estonia</option> 
-          <option value="FI">Finland</option> 
-          <option value="FR">France</option> 
-          <option value="DE">Germany</option> 
-          <option value="GR">Greece</option> 
-          <option value="HU">Hungary</option> 
-          <!--<option value="Iceland">Iceland</option>-->
-          <option value="IE">Ireland</option> 
-          <option value="IT">Italy</option> 
-          <option value="LV">Latvia</option> 
-          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
-          <option value="LT">Lithuania</option> 
-          <option value="LU">Luxembourg</option> 
-          <option value="MT">Malta</option> 
-          <option value="NL">Netherlands</option> 
-          <option value="NO">Norway</option> 
-          <option value="PL">Poland</option> 
-          <option value="PT">Portugal</option> 
-          <option value="RO">Romania</option> 
-          <option value="SK">Slovakia</option> 
-          <option value="SI">Slovenia</option> 
-          <option value="ES">Spain</option> 
-          <option value="SE">Sweden</option> 
-          <option value="CH">Switzerland</option> 
-          <option value="GB">United Kingdom</option> 
-        </select>
-      
-        <select id='calendarCountry3' onchange = "setCountry3()">
-          <option value='AT'>Austria</option> 
-          <option value='BE'>Belgium</option> 
-          <option value='BG'>Bulgaria</option> 
-          <option value="HR">Croatia</option> 
-          <!--<option value="Cyprus">Cyprus</option> -->
-          <option value="CZ">Czechia</option> 
-          <option value="DK">Denmark</option> 
-          <option value="EE">Estonia</option> 
-          <option value="FI">Finland</option> 
-          <option value="FR">France</option> 
-          <option value="DE">Germany</option> 
-          <option value="GR">Greece</option> 
-          <option value="HU">Hungary</option> 
-          <!--<option value="Iceland">Iceland</option>-->
-          <option value="IE">Ireland</option> 
-          <option value="IT">Italy</option> 
-          <option value="LV">Latvia</option> 
-          <!-- <option value="Liechtenstein">Liechtenstein</option>  -->
-          <option value="LT">Lithuania</option> 
-          <option value="LU">Luxembourg</option> 
-          <option value="MT">Malta</option> 
-          <option value="NL">Netherlands</option> 
-          <option value="NO">Norway</option> 
-          <option value="PL">Poland</option> 
-          <option value="PT">Portugal</option> 
-          <option value="RO">Romania</option> 
-          <option value="SK">Slovakia</option> 
-          <option value="SI">Slovenia</option> 
-          <option value="ES">Spain</option> 
-          <option value="SE">Sweden</option> 
-          <option value="CH">Switzerland</option> 
-          <option value="GB">United Kingdom</option> 
-        </select>
-        <!-- <label for="ex1">Select date (within 2020)</label> -->
-        <!-- <input class="form-control" id="ex1" type="text" name="daterange" value="03/10/2020 - 06/10/2020"> -->
-        <input type="text" name="daterange" value="03/10/2020 - 06/10/2020">
-        <button type="button" id="saveBtn" class="btn btn-primary" data-dismiss="modal">Filter</button>
-      </div>
-    </div> 
-
-    <script src="https://d3js.org/d3.v4.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/js/bootstrap.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
-
-    <!-- Create a div where the graph will take place -->
-    <div id="my_dataviz"></div>
-    <style>
-      .axis {
-        opacity: 0.5;
-      }
-      .axis:hover {
-        opacity: 1;
-      }
-      </style>
+    <h3> Other Data Sources </h3>
+    To add information, we used data on Covid-19 cases from Our World in Data. We also used another dataset on Covid-19 response measures.
+    
+    <br>
+    <br>
+    Let's get started! 
+    <br>
+    <br>
         
-        <script>
-      // Country selection
-      var country1;
-      var country2;
-      var country3;
-      
-      // Date picker
-      var startDate;
-      var endDate;
-      $(function() {
-        $('input[name="daterange"]').daterangepicker({
-            opens: 'left'
-          }, function(start, end, label) {
-            console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-            startDate = start;
-            endDate = end;
-          },);
-      });
-      
-        $('#saveBtn').click(function(){
-              console.log('Let me confirm:' + startDate.format('YYYY-MM-DD') + ' to ' + endDate.format('YYYY-MM-DD'));
-        });
-      
-      var dataset;
-      
-      // set the dimensions and margins of the graph
-      var margin = {top: 30, right: 250, bottom: 10, left: 50},
-        width = 900 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
-      
-      // append the svg object to the body of the page
-      var svg = d3.select("#my_dataviz")
-      .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-      .append("g")
-        .attr("transform",
-              "translate(" + margin.left + "," + margin.top + ")");
-      
-      // Convert to js' Date object
-      var parseTime = d3.timeParse("%m/%d/%Y");
-      
-      // Parse the Data
-      // d3.csv("https://raw.githubusercontent.com/knighttoken/Private/main/full_parallel.csv?token=AH7RITZPRHD2TFUSVJSPYUTAVFUSM", function(data) {
-        d3.csv('full_parallel.csv', function(data) {
+    <h3>Continent View: Which nation has the highest change in mobility at a point in time?</h3>
+    
+    Here we will write some information about what data we use, what time period, and what
+    the globe shows 
 
-        // Copy to global dataset
-        dataset = data;
-        
-        // Color scale: give me a country, I return a color
-        var keys = ["BE", "DE", "NL"]
-        var color = d3.scaleOrdinal()
-          .domain(keys)
-          // .range([ "#591bd0", "#21908dff", "#a45e4f"])
-          .range(["#e41a1c","#377eb8","#4daf4a"])
-          // .range(d3.schemeSet2);
-        
-        svg.selectAll("mydots")
-          .data(keys)
-          .enter()
-          .append("circle")
-            .attr("cx", 650)
-            .attr("cy", function(d,i){ return 125 + i*30})
-            .attr("r", 7)
-            .attr("class", "legends_dots")
-            .style("fill", function(d){return color(d)})
-      
-        svg.selectAll("mylabels")
-          .data(keys)
-          .enter()
-          .append("text")
-            .attr("x", 670)
-            .attr("y", function(d,i){return 130 + i*30})
-            .attr("class", "legends_text")
-            .style("fill", function(d){return color(d)})
-            .text(function(d){return d})
-            .attr("text-anchor", "left")
-            .style("alignment-baseline", "middle")
-      
-      
-        // Here I set the list of dimension manually to control the order of axis:
-        dimensions = ["Retail & Recreation", "Grocery & Pharmacy", "Parks", "Transit stations", "Workplaces", "Residential"]
-      
-        // For each dimension, I build a linear scale. I store all in a y object
-        var y = {}
-        for (i in dimensions) {
-          name = dimensions[i]
-          y[name] = d3.scaleLinear()
-            .domain( [-100,250] ) // --> Same axis range for each group
-            // --> different axis range for each group --> .domain( [d3.extent(data, function(d) { return +d[name]; })] )
-            .range([height, 0])
-        }
-        // console.log(y);
-      
-        // Build the X scale -> it find the best position for each Y axis
-        x = d3.scalePoint()
-          .range([0, width])
-          .domain(dimensions);
-      
-        // Highlight the country that is hovered
-        var highlight = function(d){
-      
-          selected_specie = d.country_region_code
-      
-          // first every group turns grey
-          d3.selectAll(".line")
-            .transition().duration(200)
-            .style("stroke", "lightgrey")
-            .style("opacity", "0.2")
-          // Second the hovered specie takes its color
-          d3.selectAll("." + selected_specie)
-            .transition().duration(200)
-            .style("stroke", color(selected_specie))
-            .style("opacity", "1")
-        }
-      
-        // Unhighlight
-        var doNotHighlight = function(d){
-          d3.selectAll(".line")
-            .transition().duration(200).delay(1000)
-            .style("stroke", function(d){ return( color(d.country_region_code))} )
-            .style("opacity", "1")
-        }
-      
-        // The path function take a row of the csv as input, and return x and y coordinates of the line to draw for this raw.
-        function path(d) {
-            return d3.line()(dimensions.map(function(p) {return [x(p), y[p](d[p])]; }));
-        }
-      
-        var firstData = dataset.filter(function(d) {return parseTime(d.date) <= parseTime("5/30/2020") && parseTime(d.date) >= parseTime("3/30/2020") &&
-               (d.country_region_code == 'BE' || d.country_region_code == 'DE' || d.country_region_code == 'NL')})
-      
-        // Draw the lines
-        svg
-          .selectAll("myPath")
-          // .data(data)
-          .data(firstData)
-          .enter()
-          .append("path")
-            .attr("class", function (d) { return "line " + d.country_region_code } ) // 2 class for each line: 'line' and the group name
-            .attr("d",  path)
-            .style("fill", "none" )
-            .style("stroke", function(d){ return( color(d.country_region_code))} )
-            .style("opacity", 0.5)
-            .on("mouseover", highlight)
-            .on("mouseleave", doNotHighlight )
-      
-        // Draw the axis:
-        svg.selectAll("myAxis")
-          // For each dimension of the dataset I add a 'g' element:
-          .data(dimensions).enter()
-          .append("g")
-          .attr("class", "axis")
-          // I translate this element to its right position on the x axis
-          .attr("transform", function(d) { return "translate(" + x(d) + ")"; })
-          // And I build the axis with the call function
-          .each(function(d) { d3.select(this).call(d3.axisLeft().ticks(5).scale(y[d])); })
-          // Add axis title
-          .append("text")
-            .style("text-anchor", "middle")
-            .attr("y", -9)
-            .text(function(d) { return d; })
-            .style("fill", "black")
-      
-        // Click the button, filter the dates
-        d3.select("button")    
-          .on("click", function() {
-            console.log(startDate)
-            var newData = dataset.filter(function(d) {return parseTime(d.date) <= endDate._d && parseTime(d.date) >= startDate._d &&
-               (d.country_region_code == country1 || d.country_region_code == country2 || d.country_region_code == country3)})
-            console.log(newData);
-      
-            keys = [country1, country2, country3];
-            // keys = d3.set(keys, function(d) {return d});
-      
-            // redefine the color scale
-            var color = d3.scaleOrdinal()
-              .domain(keys)
-              // .range([ "#591bd0", "#21908dff", "#a45e4f"])
-              .range(["#e41a1c","#377eb8","#4daf4a"])
-            console.log(keys);
-      
-            var highlight = function(d){
-      
-              selected_specie = d.country_region_code
-      
-              // first every group turns grey
-              d3.selectAll(".line")
-                .transition().duration(200)
-                .style("stroke", "lightgrey")
-                .style("opacity", "0.2")
-              // Second the hovered specie takes its color
-              d3.selectAll("." + selected_specie)
-                .transition().duration(200)
-                .style("stroke", color(selected_specie))
-                .style("opacity", "1")
-            }
-      
-            // Unhighlight
-            var doNotHighlight = function(d){
-                d3.selectAll(".line")
-                  .transition().duration(200).delay(1000)
-                  .style("stroke", function(d){ return( color(d.country_region_code))} )
-                  .style("opacity", "1")
-            }
-      
-            // remove existing lines 
-            svg.selectAll("path.line")
-                 .remove()
-            
-            // draw new lines with filtered dataset
-            svg.selectAll("myPath")
-                  .data(newData)
-                  .enter()
-                  .append("path")
-                  .attr("class", function (d) { return "line " + d.country_region_code } ) // 2 class for each line: 'line' and the group name
-                  .attr("d",  path)
-                  .style("fill", "none" )
-                  .style("stroke", function(d){ return( color(d.country_region_code))} )
-                  .style("opacity", 0.5)
-                  .on("mouseover", highlight)
-                  .on("mouseleave", doNotHighlight );
-            console.log("Filter completed");
-      
-            svg.selectAll("circle.legends_dots").remove()
-            
-            // Update legends
-            svg.selectAll("mydots")
-                .data(keys)
-                .enter()
-                .append("circle")
-                  .attr("cx", 650)
-                  .attr("cy", function(d,i){ return 125 + i*30})
-                  .attr("r", 7)
-                  .attr("class", "legends_dots")
-                  .style("fill", function(d){return color(d)})
-                  .exit().remove();
-      
-            svg.selectAll("text.legends_text").remove()
-      
-            svg.selectAll("mylabels")
-              .data(keys)
-              .enter()
-              .append("text")
-                .attr("x", 670)
-                .attr("y", function(d,i){return 130 + i*30})
-                .attr("class", "legends_text")
-                .style("fill", function(d){return color(d)})
-                .text(function(d){return d})
-                .attr("text-anchor", "left")
-                .style("alignment-baseline", "middle")
-                .exit().remove()
-              });
-      })
-      
-      function setCountry1(){
-        country1 = document.getElementById('calendarCountry1').value;
-      }
-      function setCountry2(){
-        country2 = document.getElementById('calendarCountry2').value;
-      }
-      function setCountry3(){
-        country3 = document.getElementById('calendarCountry3').value;
-      }
-      </script>
+    <!-- Globe -->
+    <div style="margin-top: -130px; width:100%; height:700px; overflow:hidden;">
+    <object type="text/html" data="https://knighttoken.github.io"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
 
+    <br><br>
+    
+    <!-- Barchart 
+    <div style="margin: 0 auto; width:100%; height:550px; overflow:hidden;">
+    <object type="text/html" data="html/barplot.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>-->
+
+    Let's take a look at the continent we're currently on: Europe.
+
+    <br><br>
+    
+    <h3>Europe: How do Nations Compare Across Time and Mobility Indicator?</h3>
+    
+    <p> Here we will describe this plot.</p>
+    
+    <p> Instruction: Select three distinct countries, select a time frame, click "filter"! </p>
+    
+    <!-- Parallel Coordinate -->
+    <div id="parallel" style="margin-left:-40px; width:130%; height:550px; overflow:hidden;">
+    <object type="text/html" data="html/parallel_coordinate_final.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
+    
+    <br>
+    
+    <h3> Let's see how covid cases might play a role </h3>
+    <p>x-axis: New cases per million (average over 1 month). <br> y-axis: Net change in mobility (average over
+    all indicators, average over 1 month).</p>
+    
+    <p><strong>Instructions:</strong> Start by selecting a month. Hover the mouse over the scatterplot. It should look like a + sign.
+    Then, drag and select the bubbles of interest. A chart will appear! To remove it, drag and select some
+    empty space. To change month, click a button!</p>
+    
+    <!-- Bubble Chart -->
+    <div style="margin: 0 auto; width:100%; height:500px; overflow:hidden;">
+    <object type="text/html" data="html/bubble.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
+
+    <br><br>
+    
+    <h3>Country View: Within an Individual European Nation, How has Daily Mobility Changed over Time?</h3>
+    
+    <!-- Calendar Plot -->
+    <div style="margin: 0 auto; width:100%; height:600px; overflow:hidden;">
+    <object type="text/html" data="html/calendar-plot.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
+    
+    <br>
+    On every calendar heatmap, we notice something unique: a strong change in mobility on December 24 and December 25. The most likely cause? Christmas Day! Let's take a closer look:
+    <br>
+    <br>
+    
+    <h3> Across Europe, how did Mobility change on December 24? </h3>
+    
+    <p>Move your cursor over each bar to get details! </p>
+    
+        <!-- Radial -->
+    <div style="margin-left: -200px; width:150%; height:1000px; overflow:hidden;">
+    <object type="text/html" data="html/radial_daily.html"
+            style="width:100%; height:100%; margin:5%;">
+    </object>
+    </div>
     
 </body>
 </html>

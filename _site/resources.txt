@@ -1,0 +1,18 @@
+Resources
+----------
+
+Data
+- Google Mobility Data: https://github.com/ActiveConclusion/COVID19_mobility/blob/master/summary_reports/summary_report_countries.csv
+- Our World in Data Covid-19: https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv
+- Covid Measures in Europe: https://www.ecdc.europa.eu/en/publications-data/download-data-response-measures-covid-19
+
+
+D3 Help
+- Legends in D3: https://d3-legend.susielu.com/
+- Manipulating data: https://www.d3-graph-gallery.com/graph/basic_datamanipulation.html#filtering
+- Color scales: https://github.com/d3/d3-scale-chromatic
+
+Implementations
+- Linear Calendar: https://bl.ocks.org/Saigesp/a0b505c3d0e42cfbdf39b0d2c19ada0c
+- Calendar Heatmap: https://bl.ocks.org/Saigesp/0b0995536ec3e691cec6725783870a70
+- Barchart: http://bl.ocks.org/Saigesp/f906ae2bab36f03a59c78e8d669aa68c

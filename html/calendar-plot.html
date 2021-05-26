@@ -107,15 +107,19 @@
     <script src="../js/d3.calendar.js"></script>
     <script>
             // Initiate
+            //updateLineCalendar("France")
             updateChart("residential", "France")
             
-           d3.select("#calendarCountry").on("change", function(d){
+            
+            // updateLineCalendar
+            d3.select("#calendarCountry").on("change", function(d){
               selectedCountry = String(this.value);
-              d3.select('#calendar .chart').remove();
               d3.select('#exports').selectAll("*").remove();
-              updateChart(selectedGroup, selectedCountry)
+              d3.select('#calendar .chart').remove();
               updateLineCalendar(selectedCountry)
+              updateChart(selectedGroup, selectedCountry)
             })
+
             
             // Update Calendar Heatmap
             d3.select("#ddlViewBy").on("change", function(d){
@@ -123,26 +127,9 @@
               d3.select("#calendar").selectAll("*").remove();
               updateChart(selectedGroup, selectedCountry)
             });
-            
-            d3.select("#calendarCountry").on("change", function(d){
-              selectedCountry = String(this.value);
-              d3.select('#calendar .chart').remove();
-              d3.select('#exports').selectAll("*").remove();
-              updateChart(selectedGroup, selectedCountry)
-              updateLineCalendar(selectedCountry)
-            })
-            
-            // updateLineCalendar
-
-            d3.select("#calendarCountry").on("change", function(d){
-              selectedCountry = String(this.value);
-              d3.select('#exports').selectAll("*").remove();
-              d3.select('#calendar .chart').remove();
-              updateLineCalendar(selectedCountry)
-              updateChart(selectedGroup, selectedCountry)
-            })
-            
-              
+                       
+           
+                         
 
         function updateChart(selectedGroup, selectedCountry){
           

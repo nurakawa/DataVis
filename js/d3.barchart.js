@@ -8,7 +8,7 @@ class BarChart{
 
         // Graph configuration
         this.cfg = {
-            margin: {top: 23, right: 30, bottom: 34, left: 40},
+            margin: {top: 23, right: 30, bottom: 36, left: 40},
             key: 'key',
             label2: 'location_cases',
             label: 'date',
@@ -86,9 +86,9 @@ class BarChart{
         this.yGrid = this.g.append("g")           
             .attr("class", "grid grid--y")
             //.attr("stroke", "red")
-            .call(self.make_y_gridlines()
-                .tickSize(-self.cfg.width)
-                .ticks(3, self.cfg.yscaleformat));
+            //.call(self.make_y_gridlines()
+                //.tickSize(-self.cfg.width)
+              //  .ticks(3, self.cfg.yscaleformat));
 
         // AXIS
         if(self.cfg.xticks){
@@ -149,10 +149,16 @@ class BarChart{
                 //var c = String(d[self.cfg.label2]);
                 //return !self.cfg.currentkey || d[self.cfg.key] == self.cfg.currentkey ? colorPicker(c): self.cfg.greycolor;
             //});
+            
+        //var aval = function(d) {return d[self.cfg.key]};
+        //var bval = aval.map(function(x) {return x * x; });
+        
+        const f = d3.format(".1f");
 
         this.rects.append("title")
             .attr('text-anchor', 'top')
-            .text(function(d) { return d[self.cfg.key]});
+            .text(function(d) { return f(d[self.cfg.key] * d[self.cfg.key]); });
+            //.text(aval);
             
         if(this.cfg.mean){
             this.mean = this.g.append('line')

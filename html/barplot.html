@@ -29,7 +29,7 @@
       <option value="new_deaths_per_million" selected>new deaths per million </option>
     </select>
 
-    <div id="Exports" style="width: 100%; height: 140px;"></div>
+    <div id="Exports" style="width: 100%; height: 150px;"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
     <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
@@ -51,6 +51,8 @@
         return "location_deaths";}
         }
         
+        function square(x) {
+        return x*x ;}
 
         updateBar('new_deaths_per_million')
             
@@ -59,6 +61,7 @@
         d3.csv('../data/owid-data-barchart.csv', function(data) {
         
          var loc = locPicker(selectedInd);
+         var squarekey = square(data.selectedInd);
          var accent = d3.scaleOrdinal(d3.schemeTableau10);
 
          
@@ -66,7 +69,7 @@
          var grafico = new BarChart(d3.select('#Exports'), newdata2, {
                 'key': selectedInd || 0,
                 'label': 'date',
-                'label2': selectedInd,
+                'label2': squarekey,
                 'mean': {},
                 'meanlabel': '',
                 'color': accent(1),
